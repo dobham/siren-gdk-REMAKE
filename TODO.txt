@@ -1,0 +1,15 @@
+- Floor and Ceiling Textures
+- Collectible Items and Simple Interactions
+- Doors and Switches
+- Lighting/Shading Effects
+- Map Import/Export
+  - Exporting Final Builds:
+    -Allow the user to export their project as a standalone playable   
+     build. Even if this just packages the HTML, JS, and asset files 
+     into a zip, it gives creators a way to share their "game" with 
+     others who can run it locally.
+- Sound Integration
+- Customizable Grid and Map Size
+- Layered Maps or Multi-level Floors
+- Undo/Redo in the Editor
+- Increasing and decreasing grid size in editor

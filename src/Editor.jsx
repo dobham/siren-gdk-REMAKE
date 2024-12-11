@@ -57,7 +57,7 @@ function Editor({ projectName, onBack, onPlay }) {
     // Generate a random maze:
     // First clear mapData by setting all cells to 0
     let newMap = Array.from({ length: MAP_HEIGHT }, () => Array(MAP_WIDTH).fill(0));
-    // For each cell, 70% chance to place a wall
+    // For each cell, 85% chance to place a wall
     newMap = newMap.map(row => row.map(() => {
       return Math.random() < 0.85 ? 0 : 1;
     }));
