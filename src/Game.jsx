@@ -47,6 +47,7 @@ function Game({ projectName, onBackToMenu }) {
   // Load and precompute texture columns once
   useEffect(() => {
     const img = new Image();
+    // https://permadi.com/tutorial/webgraph/index.html# 
     img.src = '/textures/text2.jpg'; 
     img.onload = () => {
       const textureWidth = 64;

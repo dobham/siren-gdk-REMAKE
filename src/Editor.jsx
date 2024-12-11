@@ -3,7 +3,6 @@ import { loadProjectData, saveProjectData } from './Database';
 import { MAP_WIDTH, MAP_HEIGHT } from './MapData';
 
 function Editor({ projectName, onBack, onPlay }) {
-  // Load existing project data or default if none
   const existingData = loadProjectData(projectName) || {
     map: Array.from({ length: MAP_HEIGHT }, () => Array(MAP_WIDTH).fill(0)),
     playerX: 3,
@@ -16,7 +15,7 @@ function Editor({ projectName, onBack, onPlay }) {
 
   const [tool, setTool] = useState('wall'); // 'wall' or 'player'
 
-  const mapScale = 20; // Larger for editing UI
+  const mapScale = 20; // size of each cell in the editor UI
 
   const handleCellClick = (x, y) => {
     if (tool === 'wall') {
@@ -52,6 +51,20 @@ function Editor({ projectName, onBack, onPlay }) {
       playerY: playerY
     });
     onPlay();
+  };
+
+  const handleGenerateMaze = () => {
+    // Generate a random maze:
+    // First clear mapData by setting all cells to 0
+    let newMap = Array.from({ length: MAP_HEIGHT }, () => Array(MAP_WIDTH).fill(0));
+    // For each cell, 70% chance to place a wall
+    newMap = newMap.map(row => row.map(() => {
+      return Math.random() < 0.85 ? 0 : 1;
+    }));
+    // Optionally, ensure the player's position is empty space if desired:
+    // newMap[playerY][playerX] = 0; // If you want to ensure player's cell is always empty.
+
+    setMapData(newMap);
   };
 
   return (
@@ -119,6 +132,7 @@ function Editor({ projectName, onBack, onPlay }) {
       <div>
         <button onClick={handleSave}>Save</button>
         <button onClick={handlePlayClick}>Play</button>
+        <button onClick={handleGenerateMaze}>Generate Random Maze</button>
         <button onClick={onBack}>Back to Menu</button>
       </div>
     </div>
