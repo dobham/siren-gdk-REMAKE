@@ -21,7 +21,7 @@ function App() {
       setProjectName(name);
       setView('editor');
     } else {
-      // If no data found, initialize
+      // If no data, initialize
       initProjectData(name);
       setProjectName(name);
       setView('editor');
@@ -50,7 +50,7 @@ function App() {
       {view === 'editor' && (
         <Editor
           projectName={projectName}
-          onBack={() => setView('menu')}
+          onBack={() => setView('projectManager')} // <--- Changed here
           onPlay={handlePlayGame}
         />
       )}
