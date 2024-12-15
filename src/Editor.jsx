@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { loadProjectData, saveProjectData } from './Database';
-import StandardEditor from './StandardEditor';
-import SubdivideEditor from './SubdivideEditor';
+import React, { useState, useEffect } from "react";
+import { loadProjectData, saveProjectData } from "./Database";
+import StandardEditor from "./StandardEditor";
+import SubdivideEditor from "./SubdivideEditor";
 
 function Editor({ projectName, onBack, onPlay }) {
   const [data, setData] = useState(null);
-  const [currentEditor, setCurrentEditor] = useState('standard'); // 'standard' or 'subdivide'
+  const [currentEditor, setCurrentEditor] = useState("standard"); // 'standard' or 'subdivide'
 
   useEffect(() => {
     const d = loadProjectData(projectName);
@@ -21,11 +21,11 @@ function Editor({ projectName, onBack, onPlay }) {
     const newData = {
       standardMap,
       subdivMap,
-      lastEditorUsed: currentEditor
+      lastEditorUsed: currentEditor,
     };
     setData(newData);
     saveProjectData(projectName, newData);
-    alert('Project saved!');
+    alert("Project saved!");
   };
 
   const handlePlayClick = (standardMap, subdivMap) => {
@@ -33,7 +33,7 @@ function Editor({ projectName, onBack, onPlay }) {
     const newData = {
       standardMap,
       subdivMap,
-      lastEditorUsed: currentEditor
+      lastEditorUsed: currentEditor,
     };
     setData(newData);
     saveProjectData(projectName, newData);
@@ -41,7 +41,7 @@ function Editor({ projectName, onBack, onPlay }) {
   };
 
   return (
-    <div style={{ textAlign: 'center' }}>
+    <div style={{ textAlign: "center" }}>
       <h2>Editor: {projectName}</h2>
       <div>
         <label>
@@ -49,23 +49,23 @@ function Editor({ projectName, onBack, onPlay }) {
             type="radio"
             name="editor_mode"
             value="standard"
-            checked={currentEditor === 'standard'}
-            onChange={() => setCurrentEditor('standard')}
+            checked={currentEditor === "standard"}
+            onChange={() => setCurrentEditor("standard")}
           />
           Standard Editor
         </label>
-        <label style={{ marginLeft: '20px' }}>
+        <label style={{ marginLeft: "20px" }}>
           <input
             type="radio"
             name="editor_mode"
             value="subdivide"
-            checked={currentEditor === 'subdivide'}
-            onChange={() => setCurrentEditor('subdivide')}
+            checked={currentEditor === "subdivide"}
+            onChange={() => setCurrentEditor("subdivide")}
           />
           Subdivide Editor
         </label>
       </div>
-      {currentEditor === 'standard' && (
+      {currentEditor === "standard" && (
         <StandardEditor
           initialMap={data.standardMap}
           onSave={(m) => handleSave(m, data.subdivMap)}
@@ -73,7 +73,7 @@ function Editor({ projectName, onBack, onPlay }) {
           onBack={onBack}
         />
       )}
-      {currentEditor === 'subdivide' && (
+      {currentEditor === "subdivide" && (
         <SubdivideEditor
           initialMap={data.subdivMap}
           onSave={(sm) => handleSave(data.standardMap, sm)}

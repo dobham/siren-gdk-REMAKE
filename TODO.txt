@@ -11,6 +11,6 @@
 - Sound Integration
 - Customizable Grid and Map Size (done)
 - Layered Maps or Multi-level Floors
-- Undo/Redo in the Editor
+- Undo/Redo in the Editor (done)
 - Increasing and decreasing grid size in editor (done)
 - Brush Tools (done)

@@ -1,13 +1,22 @@
 // Raycaster.js
 // Cast rays and return an array of ray data: {angle, distance, hitX, hitY, wasHitVertical, hitOffset}
 
-export function castRays(playerX, playerY, playerAngle, mapWidth, mapHeight, unusedMap, lastEditorUsed, mapData) {
+export function castRays(
+  playerX,
+  playerY,
+  playerAngle,
+  mapWidth,
+  mapHeight,
+  unusedMap,
+  lastEditorUsed,
+  mapData,
+) {
   const screenWidth = 320;
-  const fov = Math.PI / 3; 
+  const fov = Math.PI / 3;
   const halfFov = fov / 2;
   const numRays = screenWidth;
   const angleStep = fov / numRays;
-  const maxDepth = 20; 
+  const maxDepth = 20;
   const stepSize = 0.1;
 
   const rays = [];
@@ -67,7 +76,7 @@ export function castRays(playerX, playerY, playerAngle, mapWidth, mapHeight, unu
       hitX: hitX,
       hitY: hitY,
       wasHitVertical: wasHitVertical,
-      hitOffset: hitOffset
+      hitOffset: hitOffset,
     });
   }
 
@@ -79,10 +88,16 @@ function isWithinBounds(x, y, mapWidth, mapHeight) {
 }
 
 function isWallAt(x, y, lastEditorUsed, mapData) {
-  if (lastEditorUsed === 'standard') {
+  if (lastEditorUsed === "standard") {
     const mx = x | 0;
     const my = y | 0;
-    if (my < 0 || mx < 0 || my >= mapData.cells.length || mx >= mapData.cells[0].length) return true;
+    if (
+      my < 0 ||
+      mx < 0 ||
+      my >= mapData.cells.length ||
+      mx >= mapData.cells[0].length
+    )
+      return true;
     return mapData.cells[my][mx] === 1;
   } else {
     // Subdiv map check
@@ -92,10 +107,15 @@ function isWallAt(x, y, lastEditorUsed, mapData) {
 
 function subdivIsWall(cell, x, y) {
   if (!cell.subdivided) {
-    return cell.cellType === 'wall';
+    return cell.cellType === "wall";
   } else {
     for (let ch of cell.children) {
-      if (x >= ch.x && x < ch.x + ch.width && y >= ch.y && y < ch.y + ch.height) {
+      if (
+        x >= ch.x &&
+        x < ch.x + ch.width &&
+        y >= ch.y &&
+        y < ch.y + ch.height
+      ) {
         return subdivIsWall(ch, x, y);
       }
     }

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from "react";
 
 function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
   const [root, setRoot] = useState(initialMap.root);
@@ -6,8 +6,8 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
   const [playerY, setPlayerY] = useState(initialMap.playerY);
   const [scaleLevel, setScaleLevel] = useState(initialMap.scaleLevel || 0);
 
-  const [mode, setMode] = useState('subdivide');
-  const [placingType, setPlacingType] = useState('wall');
+  const [mode, setMode] = useState("subdivide");
+  const [placingType, setPlacingType] = useState("wall");
   const [brushActive, setBrushActive] = useState(false);
   const [eraserActive, setEraserActive] = useState(false);
 
@@ -28,7 +28,7 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
       mode,
       placingType,
       brushActive,
-      eraserActive
+      eraserActive,
     };
   }
 
@@ -52,24 +52,57 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
   function subdivideCell(cell) {
     if (cell.subdivided) return;
     cell.subdivided = true;
-    const halfW = cell.width/2;
-    const halfH = cell.height/2;
+    const halfW = cell.width / 2;
+    const halfH = cell.height / 2;
     cell.children = [
-      {x:cell.x, y:cell.y, width:halfW, height:halfH, subdivided:false, cellType:'empty'},
-      {x:cell.x+halfW, y:cell.y, width:halfW, height:halfH, subdivided:false, cellType:'empty'},
-      {x:cell.x, y:cell.y+halfH, width:halfW, height:halfH, subdivided:false, cellType:'empty'},
-      {x:cell.x+halfW, y:cell.y+halfH, width:halfW, height:halfH, subdivided:false, cellType:'empty'}
+      {
+        x: cell.x,
+        y: cell.y,
+        width: halfW,
+        height: halfH,
+        subdivided: false,
+        cellType: "empty",
+      },
+      {
+        x: cell.x + halfW,
+        y: cell.y,
+        width: halfW,
+        height: halfH,
+        subdivided: false,
+        cellType: "empty",
+      },
+      {
+        x: cell.x,
+        y: cell.y + halfH,
+        width: halfW,
+        height: halfH,
+        subdivided: false,
+        cellType: "empty",
+      },
+      {
+        x: cell.x + halfW,
+        y: cell.y + halfH,
+        width: halfW,
+        height: halfH,
+        subdivided: false,
+        cellType: "empty",
+      },
     ];
   }
 
   function findCellAtPosition(cell, x, y) {
     if (!cell.subdivided) return cell;
     for (let ch of cell.children) {
-      if (x >= ch.x && x < ch.x+ch.width && y >= ch.y && y < ch.y+ch.height) {
+      if (
+        x >= ch.x &&
+        x < ch.x + ch.width &&
+        y >= ch.y &&
+        y < ch.y + ch.height
+      ) {
         return findCellAtPosition(ch, x, y);
       }
     }
-    return cell; 
+    return cell;
   }
 
   function collectLeafCells(cell, arr) {
@@ -84,18 +117,21 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
 
   function removeOldPlayer(cell) {
     if (!cell.subdivided) {
-      if (cell.cellType === 'player') cell.cellType='empty';
+      if (cell.cellType === "player") cell.cellType = "empty";
     } else {
       for (let ch of cell.children) removeOldPlayer(ch);
     }
   }
 
   function ensureCellSizeForPlayer(cell, playerSize) {
-    while ((cell.width > playerSize || cell.height > playerSize) && !cell.subdivided) {
+    while (
+      (cell.width > playerSize || cell.height > playerSize) &&
+      !cell.subdivided
+    ) {
       subdivideCell(cell);
     }
     if (cell.subdivided) {
-      let ch = cell.children[0]; 
+      let ch = cell.children[0];
       return ensureCellSizeForPlayer(ch, playerSize);
     }
     return cell;
@@ -107,25 +143,25 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
     saveHistoryBeforeAction();
     const newRoot = structuredClone(root);
     const cell = findCellAtPosition(newRoot, x, y);
-    if (mode === 'subdivide') {
+    if (mode === "subdivide") {
       if (!cell.subdivided) {
         subdivideCell(cell);
       }
-    } else if (mode === 'place') {
-      if (placingType === 'player') {
+    } else if (mode === "place") {
+      if (placingType === "player") {
         removeOldPlayer(newRoot);
         ensureCellSizeForPlayer(cell, playerCellSize);
-        cell.cellType = 'player';
-        setPlayerX(cell.x + cell.width/2);
-        setPlayerY(cell.y + cell.height/2);
-      } else if (placingType === 'wall') {
+        cell.cellType = "player";
+        setPlayerX(cell.x + cell.width / 2);
+        setPlayerY(cell.y + cell.height / 2);
+      } else if (placingType === "wall") {
         if (!cell.subdivided) {
           if (brushActive && !eraserActive) {
-            cell.cellType = 'wall';
+            cell.cellType = "wall";
           } else if (eraserActive && !brushActive) {
-            cell.cellType = 'empty';
+            cell.cellType = "empty";
           } else {
-            cell.cellType = (cell.cellType === 'wall') ? 'empty' : 'wall';
+            cell.cellType = cell.cellType === "wall" ? "empty" : "wall";
           }
         }
       }
@@ -138,7 +174,7 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
       root,
       playerX,
       playerY,
-      scaleLevel
+      scaleLevel,
     });
   };
 
@@ -147,7 +183,7 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
       root,
       playerX,
       playerY,
-      scaleLevel
+      scaleLevel,
     });
   };
 
@@ -156,7 +192,7 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
 
   const onMouseDown = (e) => {
     setIsMouseDown(true);
-    const {x, y} = getMapCoords(e);
+    const { x, y } = getMapCoords(e);
     if (x !== null && y !== null) handleClickCell(x, y);
   };
 
@@ -165,8 +201,8 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
   };
 
   const onMouseMove = (e) => {
-    if (isMouseDown && mode === 'place' && placingType === 'wall') {
-      const {x, y} = getMapCoords(e);
+    if (isMouseDown && mode === "place" && placingType === "wall") {
+      const { x, y } = getMapCoords(e);
       if (x !== null && y !== null) handleClickCell(x, y);
     }
   };
@@ -177,10 +213,15 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
     const offsetY = e.clientY - rect.top;
     const clickX = offsetX / mapScale;
     const clickY = offsetY / mapScale;
-    if (clickX < 0 || clickY < 0 || clickX >= root.width || clickY >= root.height) {
-      return {x:null,y:null};
+    if (
+      clickX < 0 ||
+      clickY < 0 ||
+      clickX >= root.width ||
+      clickY >= root.height
+    ) {
+      return { x: null, y: null };
     }
-    return {x:clickX,y:clickY};
+    return { x: clickX, y: clickY };
   }
 
   function handleScaleDown() {
@@ -265,47 +306,59 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
             type="radio"
             name="sub_mode"
             value="subdivide"
-            checked={mode === 'subdivide'}
-            onChange={() => {saveHistoryBeforeAction(); setMode('subdivide');}}
+            checked={mode === "subdivide"}
+            onChange={() => {
+              saveHistoryBeforeAction();
+              setMode("subdivide");
+            }}
           />
           Subdivide Mode
         </label>
-        <label style={{ marginLeft: '20px' }}>
+        <label style={{ marginLeft: "20px" }}>
           <input
             type="radio"
             name="sub_mode"
             value="place"
-            checked={mode === 'place'}
-            onChange={() => {saveHistoryBeforeAction(); setMode('place');}}
+            checked={mode === "place"}
+            onChange={() => {
+              saveHistoryBeforeAction();
+              setMode("place");
+            }}
           />
           Place Mode
         </label>
       </div>
-      {mode === 'place' && (
+      {mode === "place" && (
         <div>
           <label>
             <input
               type="radio"
               name="placing_type"
               value="wall"
-              checked={placingType === 'wall'}
-              onChange={() => {saveHistoryBeforeAction(); setPlacingType('wall');}}
+              checked={placingType === "wall"}
+              onChange={() => {
+                saveHistoryBeforeAction();
+                setPlacingType("wall");
+              }}
             />
             Wall
           </label>
-          <label style={{ marginLeft: '20px' }}>
+          <label style={{ marginLeft: "20px" }}>
             <input
               type="radio"
               name="placing_type"
               value="player"
-              checked={placingType === 'player'}
-              onChange={() => {saveHistoryBeforeAction(); setPlacingType('player');}}
+              checked={placingType === "player"}
+              onChange={() => {
+                saveHistoryBeforeAction();
+                setPlacingType("player");
+              }}
             />
             Player
           </label>
-          {placingType === 'wall' && (
+          {placingType === "wall" && (
             <>
-              <label style={{ marginLeft: '20px' }}>
+              <label style={{ marginLeft: "20px" }}>
                 <input
                   type="checkbox"
                   checked={brushActive}
@@ -313,7 +366,7 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
                 />
                 Brush Mode
               </label>
-              <label style={{ marginLeft: '20px' }}>
+              <label style={{ marginLeft: "20px" }}>
                 <input
                   type="checkbox"
                   checked={eraserActive}
@@ -331,28 +384,31 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
         onMouseUp={onMouseUp}
         onMouseMove={onMouseMove}
         style={{
-          position:'relative',
+          position: "relative",
           width: root.width * mapScale,
           height: root.height * mapScale,
-          border: '2px solid #555',
-          margin:'20px auto'
+          border: "2px solid #555",
+          margin: "20px auto",
         }}
       >
         {cellsToDraw.map((c, i) => {
-          let bgColor = '#000';
-          if (c.cellType === 'wall') bgColor = '#444';
-          if (c.cellType === 'player') bgColor = 'gold';
+          let bgColor = "#000";
+          if (c.cellType === "wall") bgColor = "#444";
+          if (c.cellType === "player") bgColor = "gold";
           return (
-            <div key={i} style={{
-              position:'absolute',
-              left: c.x * mapScale,
-              top: c.y * mapScale,
-              width: c.width * mapScale,
-              height: c.height * mapScale,
-              backgroundColor: bgColor,
-              border:'1px solid #333',
-              boxSizing:'border-box'
-            }} />
+            <div
+              key={i}
+              style={{
+                position: "absolute",
+                left: c.x * mapScale,
+                top: c.y * mapScale,
+                width: c.width * mapScale,
+                height: c.height * mapScale,
+                backgroundColor: bgColor,
+                border: "1px solid #333",
+                boxSizing: "border-box",
+              }}
+            />
           );
         })}
       </div>
@@ -361,8 +417,12 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
         <button onClick={handlePlayClick}>Play</button>
         <button onClick={handleScaleDown}>Scale Down</button>
         <button onClick={handleScaleUp}>Scale Up</button>
-        <button onClick={undo} disabled={past.length===0}>Undo</button>
-        <button onClick={redo} disabled={future.length===0}>Redo</button>
+        <button onClick={undo} disabled={past.length === 0}>
+          Undo
+        </button>
+        <button onClick={redo} disabled={future.length === 0}>
+          Redo
+        </button>
         <button onClick={onBack}>Back</button>
       </div>
     </div>

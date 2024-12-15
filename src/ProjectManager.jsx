@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { saveProject, listProjects, deleteProject } from './Database';
+import React, { useState } from "react";
+import { saveProject, listProjects, deleteProject } from "./Database";
 
 function ProjectManager({ onStartProject, onLoadProject, onBack }) {
-  const [newProjectName, setNewProjectName] = useState('');
-  const [selectedProject, setSelectedProject] = useState('');
+  const [newProjectName, setNewProjectName] = useState("");
+  const [selectedProject, setSelectedProject] = useState("");
   const [projects, setProjects] = useState(listProjects());
 
   const handleCreate = () => {
@@ -12,7 +12,7 @@ function ProjectManager({ onStartProject, onLoadProject, onBack }) {
       setProjects(listProjects());
       onStartProject(newProjectName);
     } else {
-      alert('Please enter a valid project name.');
+      alert("Please enter a valid project name.");
     }
   };
 
@@ -24,14 +24,16 @@ function ProjectManager({ onStartProject, onLoadProject, onBack }) {
 
   const handleDelete = () => {
     if (selectedProject) {
-      const confirmDelete = window.confirm(`Are you sure you want to delete project "${selectedProject}"?`);
+      const confirmDelete = window.confirm(
+        `Are you sure you want to delete project "${selectedProject}"?`,
+      );
       if (confirmDelete) {
         deleteProject(selectedProject);
         setProjects(listProjects());
-        setSelectedProject('');
+        setSelectedProject("");
       }
     } else {
-      alert('Please select a project to delete.');
+      alert("Please select a project to delete.");
     }
   };
 
@@ -56,7 +58,9 @@ function ProjectManager({ onStartProject, onLoadProject, onBack }) {
         >
           <option value="">--Select a Project--</option>
           {projects.map((p) => (
-            <option key={p} value={p}>{p}</option>
+            <option key={p} value={p}>
+              {p}
+            </option>
           ))}
         </select>
         <button onClick={handleLoad}>Load Project</button>

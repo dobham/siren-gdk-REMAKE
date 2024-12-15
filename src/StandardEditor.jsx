@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from "react";
 
 function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
   // State
@@ -9,7 +9,7 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
   const [mapHeight, setMapHeight] = useState(initialMap.mapHeight);
   const [scaleLevel, setScaleLevel] = useState(initialMap.scaleLevel || 0);
 
-  const [tool, setTool] = useState('wall');
+  const [tool, setTool] = useState("wall");
   const [brushActive, setBrushActive] = useState(false);
   const [eraserActive, setEraserActive] = useState(false);
 
@@ -29,7 +29,9 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
       mapWidth,
       mapHeight,
       scaleLevel,
-      tool, brushActive, eraserActive
+      tool,
+      brushActive,
+      eraserActive,
     };
   }
 
@@ -53,7 +55,7 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
 
   const handleCellAction = (x, y) => {
     saveHistoryBeforeAction();
-    if (tool === 'wall') {
+    if (tool === "wall") {
       if (brushActive && !eraserActive) {
         paintCellWall(x, y);
       } else if (eraserActive && !brushActive) {
@@ -61,39 +63,45 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
       } else {
         toggleCellWall(x, y);
       }
-    } else if (tool === 'player') {
+    } else if (tool === "player") {
       setPlayerX(x);
       setPlayerY(y);
     }
   };
 
   const toggleCellWall = (x, y) => {
-    const newMap = mapData.map((row, iy) => row.map((cell, ix) => {
-      if (ix === x && iy === y) {
-        return cell === 1 ? 0 : 1;
-      }
-      return cell;
-    }));
+    const newMap = mapData.map((row, iy) =>
+      row.map((cell, ix) => {
+        if (ix === x && iy === y) {
+          return cell === 1 ? 0 : 1;
+        }
+        return cell;
+      }),
+    );
     setMapData(newMap);
   };
 
   const paintCellWall = (x, y) => {
-    const newMap = mapData.map((row, iy) => row.map((cell, ix) => {
-      if (ix === x && iy === y) {
-        return 1;
-      }
-      return cell;
-    }));
+    const newMap = mapData.map((row, iy) =>
+      row.map((cell, ix) => {
+        if (ix === x && iy === y) {
+          return 1;
+        }
+        return cell;
+      }),
+    );
     setMapData(newMap);
   };
 
   const eraseCellWall = (x, y) => {
-    const newMap = mapData.map((row, iy) => row.map((cell, ix) => {
-      if (ix === x && iy === y) {
-        return 0;
-      }
-      return cell;
-    }));
+    const newMap = mapData.map((row, iy) =>
+      row.map((cell, ix) => {
+        if (ix === x && iy === y) {
+          return 0;
+        }
+        return cell;
+      }),
+    );
     setMapData(newMap);
   };
 
@@ -104,7 +112,7 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
       playerY,
       mapWidth,
       mapHeight,
-      scaleLevel
+      scaleLevel,
     });
   };
 
@@ -115,7 +123,7 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
       playerY,
       mapWidth,
       mapHeight,
-      scaleLevel
+      scaleLevel,
     });
   };
 
@@ -124,14 +132,16 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
     const newWidth = mapWidth * 2;
     const newHeight = mapHeight * 2;
 
-    const newMap = Array.from({ length: newHeight }, () => Array(newWidth).fill(0));
+    const newMap = Array.from({ length: newHeight }, () =>
+      Array(newWidth).fill(0),
+    );
     for (let y = 0; y < mapHeight; y++) {
       for (let x = 0; x < mapWidth; x++) {
         const val = mapData[y][x];
-        newMap[y*2][x*2] = val;
-        newMap[y*2][x*2+1] = val;
-        newMap[y*2+1][x*2] = val;
-        newMap[y*2+1][x*2+1] = val;
+        newMap[y * 2][x * 2] = val;
+        newMap[y * 2][x * 2 + 1] = val;
+        newMap[y * 2 + 1][x * 2] = val;
+        newMap[y * 2 + 1][x * 2 + 1] = val;
       }
     }
 
@@ -154,10 +164,12 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
     const newWidth = mapWidth / 2;
     const newHeight = mapHeight / 2;
 
-    const newMap = Array.from({ length: newHeight }, () => Array(newWidth).fill(0));
+    const newMap = Array.from({ length: newHeight }, () =>
+      Array(newWidth).fill(0),
+    );
     for (let y = 0; y < newHeight; y++) {
       for (let x = 0; x < newWidth; x++) {
-        const val = mapData[y*2][x*2];
+        const val = mapData[y * 2][x * 2];
         newMap[y][x] = val;
       }
     }
@@ -175,7 +187,7 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
 
   const onMouseDown = (e) => {
     setIsMouseDown(true);
-    const {xCell, yCell} = getCellFromEvent(e);
+    const { xCell, yCell } = getCellFromEvent(e);
     if (xCell !== null && yCell !== null) {
       handleCellAction(xCell, yCell);
     }
@@ -186,8 +198,8 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
   };
 
   const onMouseMove = (e) => {
-    if (isMouseDown && tool === 'wall') {
-      const {xCell, yCell} = getCellFromEvent(e);
+    if (isMouseDown && tool === "wall") {
+      const { xCell, yCell } = getCellFromEvent(e);
       if (xCell !== null && yCell !== null) {
         handleCellAction(xCell, yCell);
       }
@@ -201,15 +213,15 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
     const xCell = Math.floor(offsetX / mapScale);
     const yCell = Math.floor(offsetY / mapScale);
     if (xCell < 0 || xCell >= mapWidth || yCell < 0 || yCell >= mapHeight) {
-      return {xCell: null, yCell: null};
+      return { xCell: null, yCell: null };
     }
-    return {xCell, yCell};
+    return { xCell, yCell };
   };
 
   const handleBrushModeChange = (checked) => {
     saveHistoryBeforeAction();
     if (checked) {
-      setEraserActive(false); 
+      setEraserActive(false);
     }
     setBrushActive(checked);
   };
@@ -250,24 +262,30 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
             type="radio"
             name="std_tool"
             value="wall"
-            checked={tool === 'wall'}
-            onChange={() => { saveHistoryBeforeAction(); setTool('wall'); }}
+            checked={tool === "wall"}
+            onChange={() => {
+              saveHistoryBeforeAction();
+              setTool("wall");
+            }}
           />
           Wall Tool
         </label>
-        <label style={{ marginLeft: '20px' }}>
+        <label style={{ marginLeft: "20px" }}>
           <input
             type="radio"
             name="std_tool"
             value="player"
-            checked={tool === 'player'}
-            onChange={() => { saveHistoryBeforeAction(); setTool('player'); }}
+            checked={tool === "player"}
+            onChange={() => {
+              saveHistoryBeforeAction();
+              setTool("player");
+            }}
           />
           Player Tool
         </label>
-        {tool === 'wall' && (
+        {tool === "wall" && (
           <>
-            <label style={{ marginLeft: '20px' }}>
+            <label style={{ marginLeft: "20px" }}>
               <input
                 type="checkbox"
                 checked={brushActive}
@@ -275,7 +293,7 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
               />
               Brush Mode
             </label>
-            <label style={{ marginLeft: '20px' }}>
+            <label style={{ marginLeft: "20px" }}>
               <input
                 type="checkbox"
                 checked={eraserActive}
@@ -290,12 +308,12 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
       <div
         ref={containerRef}
         style={{
-          display: 'grid',
+          display: "grid",
           gridTemplateColumns: `repeat(${mapWidth}, ${mapScale}px)`,
-          border: '2px solid #555',
+          border: "2px solid #555",
           width: mapWidth * mapScale,
-          margin: '20px auto',
-          position: 'relative'
+          margin: "20px auto",
+          position: "relative",
         }}
         onMouseDown={onMouseDown}
         onMouseUp={onMouseUp}
@@ -305,11 +323,11 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
           row.map((cell, x) => {
             let bgColor;
             if (x === playerX && y === playerY) {
-              bgColor = 'gold';
+              bgColor = "gold";
             } else if (cell === 1) {
-              bgColor = '#444';
+              bgColor = "#444";
             } else {
-              bgColor = '#000';
+              bgColor = "#000";
             }
 
             return (
@@ -319,12 +337,12 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
                   width: mapScale,
                   height: mapScale,
                   backgroundColor: bgColor,
-                  boxSizing: 'border-box',
-                  border: '1px solid #333'
+                  boxSizing: "border-box",
+                  border: "1px solid #333",
                 }}
               />
             );
-          })
+          }),
         )}
       </div>
       <div>
@@ -332,8 +350,12 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
         <button onClick={handlePlayClick}>Play</button>
         <button onClick={handleScaleDown}>Scale Down</button>
         <button onClick={handleScaleUp}>Scale Up</button>
-        <button onClick={undo} disabled={past.length===0}>Undo</button>
-        <button onClick={redo} disabled={future.length===0}>Redo</button>
+        <button onClick={undo} disabled={past.length === 0}>
+          Undo
+        </button>
+        <button onClick={redo} disabled={future.length === 0}>
+          Redo
+        </button>
         <button onClick={onBack}>Back</button>
       </div>
     </div>
