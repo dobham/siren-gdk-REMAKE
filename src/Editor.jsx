@@ -58,9 +58,7 @@ function Editor({ projectName, onBack, onPlay }) {
     // First clear mapData by setting all cells to 0
     let newMap = Array.from({ length: MAP_HEIGHT }, () => Array(MAP_WIDTH).fill(0));
     // For each cell, 85% chance to place a wall
-    newMap = newMap.map(row => row.map(() => {
-      return Math.random() < 0.85 ? 0 : 1;
-    }));
+    newMap = newMap.map(row => row.map(() => { return Math.random() < 0.85 ? 0 : 1;}));
     // Optionally, ensure the player's position is empty space if desired:
     // newMap[playerY][playerX] = 0; // If you want to ensure player's cell is always empty.
 
