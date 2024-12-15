@@ -4,15 +4,50 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
   const [root, setRoot] = useState(initialMap.root);
   const [playerX, setPlayerX] = useState(initialMap.playerX);
   const [playerY, setPlayerY] = useState(initialMap.playerY);
-  const [mode, setMode] = useState('subdivide'); // 'subdivide' or 'place'
-  const [placingType, setPlacingType] = useState('wall'); // 'wall' or 'player'
+  const [scaleLevel, setScaleLevel] = useState(initialMap.scaleLevel || 0);
+
+  const [mode, setMode] = useState('subdivide');
+  const [placingType, setPlacingType] = useState('wall');
   const [brushActive, setBrushActive] = useState(false);
   const [eraserActive, setEraserActive] = useState(false);
-  const [scaleLevel, setScaleLevel] = useState(initialMap.scaleLevel || 0);
 
   const mapScale = 40;
   const containerRef = useRef(null);
   const [isMouseDown, setIsMouseDown] = useState(false);
+
+  // History
+  const [past, setPast] = useState([]);
+  const [future, setFuture] = useState([]);
+
+  function getCurrentState() {
+    return {
+      root: structuredClone(root),
+      playerX,
+      playerY,
+      scaleLevel,
+      mode,
+      placingType,
+      brushActive,
+      eraserActive
+    };
+  }
+
+  function loadState(state) {
+    setRoot(state.root);
+    setPlayerX(state.playerX);
+    setPlayerY(state.playerY);
+    setScaleLevel(state.scaleLevel);
+    setMode(state.mode);
+    setPlacingType(state.placingType);
+    setBrushActive(state.brushActive);
+    setEraserActive(state.eraserActive);
+  }
+
+  function saveHistoryBeforeAction() {
+    const current = getCurrentState();
+    setPast([...past, current]);
+    setFuture([]);
+  }
 
   function subdivideCell(cell) {
     if (cell.subdivided) return;
@@ -55,20 +90,21 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
     }
   }
 
-  function ensureCellSizeForPlayer(rootCell, cell, playerSize) {
+  function ensureCellSizeForPlayer(cell, playerSize) {
     while ((cell.width > playerSize || cell.height > playerSize) && !cell.subdivided) {
       subdivideCell(cell);
     }
     if (cell.subdivided) {
       let ch = cell.children[0]; 
-      return ensureCellSizeForPlayer(rootCell, ch, playerSize);
+      return ensureCellSizeForPlayer(ch, playerSize);
     }
     return cell;
   }
 
   const playerCellSize = 1;
 
-  const handleClickCell = (x, y) => {
+  function handleClickCell(x, y) {
+    saveHistoryBeforeAction();
     const newRoot = structuredClone(root);
     const cell = findCellAtPosition(newRoot, x, y);
     if (mode === 'subdivide') {
@@ -78,7 +114,7 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
     } else if (mode === 'place') {
       if (placingType === 'player') {
         removeOldPlayer(newRoot);
-        ensureCellSizeForPlayer(newRoot, cell, playerCellSize);
+        ensureCellSizeForPlayer(cell, playerCellSize);
         cell.cellType = 'player';
         setPlayerX(cell.x + cell.width/2);
         setPlayerY(cell.y + cell.height/2);
@@ -89,14 +125,13 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
           } else if (eraserActive && !brushActive) {
             cell.cellType = 'empty';
           } else {
-            // Toggle
             cell.cellType = (cell.cellType === 'wall') ? 'empty' : 'wall';
           }
         }
       }
     }
     setRoot(newRoot);
-  };
+  }
 
   const handleSave = () => {
     onSave({
@@ -136,7 +171,7 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
     }
   };
 
-  const getMapCoords = (e) => {
+  function getMapCoords(e) {
     const rect = containerRef.current.getBoundingClientRect();
     const offsetX = e.clientX - rect.left;
     const offsetY = e.clientY - rect.top;
@@ -146,10 +181,10 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
       return {x:null,y:null};
     }
     return {x:clickX,y:clickY};
-  };
+  }
 
-  // Scaling
-  const handleScaleDown = () => {
+  function handleScaleDown() {
+    saveHistoryBeforeAction();
     const newRoot = structuredClone(root);
     scaleCells(newRoot, 2);
     const newPlayerX = playerX * 2;
@@ -158,12 +193,11 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
     setPlayerX(newPlayerX);
     setPlayerY(newPlayerY);
     setScaleLevel(scaleLevel + 1);
-  };
+  }
 
-  const handleScaleUp = () => {
-    if (scaleLevel === 0) {
-      return;
-    }
+  function handleScaleUp() {
+    if (scaleLevel === 0) return;
+    saveHistoryBeforeAction();
     const newRoot = structuredClone(root);
     scaleCells(newRoot, 0.5);
     const newPlayerX = playerX * 0.5;
@@ -172,7 +206,7 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
     setPlayerX(newPlayerX);
     setPlayerY(newPlayerY);
     setScaleLevel(scaleLevel - 1);
-  };
+  }
 
   function scaleCells(cell, factor) {
     cell.x *= factor;
@@ -188,6 +222,7 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
   }
 
   const handleBrushModeChange = (checked) => {
+    saveHistoryBeforeAction();
     if (checked) {
       setEraserActive(false);
     }
@@ -195,11 +230,32 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
   };
 
   const handleEraserModeChange = (checked) => {
+    saveHistoryBeforeAction();
     if (checked) {
       setBrushActive(false);
     }
     setEraserActive(checked);
   };
+
+  function undo() {
+    if (past.length > 0) {
+      const previous = past[past.length - 1];
+      const current = getCurrentState();
+      setFuture([...future, current]);
+      setPast(past.slice(0, past.length - 1));
+      loadState(previous);
+    }
+  }
+
+  function redo() {
+    if (future.length > 0) {
+      const next = future[future.length - 1];
+      const current = getCurrentState();
+      setPast([...past, current]);
+      setFuture(future.slice(0, future.length - 1));
+      loadState(next);
+    }
+  }
 
   return (
     <div>
@@ -210,7 +266,7 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
             name="sub_mode"
             value="subdivide"
             checked={mode === 'subdivide'}
-            onChange={() => setMode('subdivide')}
+            onChange={() => {saveHistoryBeforeAction(); setMode('subdivide');}}
           />
           Subdivide Mode
         </label>
@@ -220,7 +276,7 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
             name="sub_mode"
             value="place"
             checked={mode === 'place'}
-            onChange={() => setMode('place')}
+            onChange={() => {saveHistoryBeforeAction(); setMode('place');}}
           />
           Place Mode
         </label>
@@ -233,7 +289,7 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
               name="placing_type"
               value="wall"
               checked={placingType === 'wall'}
-              onChange={() => setPlacingType('wall')}
+              onChange={() => {saveHistoryBeforeAction(); setPlacingType('wall');}}
             />
             Wall
           </label>
@@ -243,7 +299,7 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
               name="placing_type"
               value="player"
               checked={placingType === 'player'}
-              onChange={() => setPlacingType('player')}
+              onChange={() => {saveHistoryBeforeAction(); setPlacingType('player');}}
             />
             Player
           </label>
@@ -305,7 +361,9 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
         <button onClick={handlePlayClick}>Play</button>
         <button onClick={handleScaleDown}>Scale Down</button>
         <button onClick={handleScaleUp}>Scale Up</button>
-        <button onClick={onBack}>Back to Menu</button>
+        <button onClick={undo} disabled={past.length===0}>Undo</button>
+        <button onClick={redo} disabled={future.length===0}>Redo</button>
+        <button onClick={onBack}>Back</button>
       </div>
     </div>
   );

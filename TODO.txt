@@ -13,4 +13,4 @@
 - Layered Maps or Multi-level Floors
 - Undo/Redo in the Editor
 - Increasing and decreasing grid size in editor (done)
-- Brush Tools and Shapes
+- Brush Tools (done)

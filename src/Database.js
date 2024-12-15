@@ -15,7 +15,6 @@ export function listProjects() {
   return JSON.parse(localStorage.getItem('projects') || '[]');
 }
 
-// In addition to the above, we have the functions we introduced in our newer versions:
 export function saveProjectData(name, data) {
   let projects = JSON.parse(localStorage.getItem('projects') || '[]');
   if (!projects.includes(name)) {
@@ -40,7 +39,7 @@ export function initProjectData(name) {
         playerY: 3,
         mapWidth: 8,
         mapHeight: 8,
-        scaleLevel: 0 // new property to track scaling
+        scaleLevel: 0
       },
       subdivMap: {
         root: {
@@ -50,7 +49,8 @@ export function initProjectData(name) {
           cellType: 'empty'
         },
         playerX: 3,
-        playerY: 3
+        playerY: 3,
+        scaleLevel: 0
       },
       lastEditorUsed: 'standard'
     };
@@ -59,3 +59,12 @@ export function initProjectData(name) {
   return data;
 }
 
+export function deleteProject(name) {
+  let projects = JSON.parse(localStorage.getItem('projects') || '[]');
+  // Remove from projects array
+  projects = projects.filter(p => p !== name);
+  localStorage.setItem('projects', JSON.stringify(projects));
+
+  // Remove project data
+  localStorage.removeItem(`project_${name}`);
+}

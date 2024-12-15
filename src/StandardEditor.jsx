@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 
 function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
+  // State
   const [mapData, setMapData] = useState(initialMap.cells);
   const [playerX, setPlayerX] = useState(initialMap.playerX);
   const [playerY, setPlayerY] = useState(initialMap.playerY);
@@ -12,20 +13,52 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
   const [brushActive, setBrushActive] = useState(false);
   const [eraserActive, setEraserActive] = useState(false);
 
+  // History stacks
+  const [past, setPast] = useState([]);
+  const [future, setFuture] = useState([]);
+
   const mapScale = 20;
   const containerRef = useRef(null);
   const [isMouseDown, setIsMouseDown] = useState(false);
 
+  function getCurrentState() {
+    return {
+      mapData: structuredClone(mapData),
+      playerX,
+      playerY,
+      mapWidth,
+      mapHeight,
+      scaleLevel,
+      tool, brushActive, eraserActive
+    };
+  }
+
+  function loadState(state) {
+    setMapData(state.mapData);
+    setPlayerX(state.playerX);
+    setPlayerY(state.playerY);
+    setMapWidth(state.mapWidth);
+    setMapHeight(state.mapHeight);
+    setScaleLevel(state.scaleLevel);
+    setTool(state.tool);
+    setBrushActive(state.brushActive);
+    setEraserActive(state.eraserActive);
+  }
+
+  function saveHistoryBeforeAction() {
+    const current = getCurrentState();
+    setPast([...past, current]);
+    setFuture([]);
+  }
+
   const handleCellAction = (x, y) => {
+    saveHistoryBeforeAction();
     if (tool === 'wall') {
       if (brushActive && !eraserActive) {
-        // Paint cell as wall
         paintCellWall(x, y);
       } else if (eraserActive && !brushActive) {
-        // Erase wall (make empty)
         eraseCellWall(x, y);
       } else {
-        // Toggle wall normally
         toggleCellWall(x, y);
       }
     } else if (tool === 'player') {
@@ -45,7 +78,6 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
   };
 
   const paintCellWall = (x, y) => {
-    // Set cell to wall (1)
     const newMap = mapData.map((row, iy) => row.map((cell, ix) => {
       if (ix === x && iy === y) {
         return 1;
@@ -56,7 +88,6 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
   };
 
   const eraseCellWall = (x, y) => {
-    // Set cell to empty (0)
     const newMap = mapData.map((row, iy) => row.map((cell, ix) => {
       if (ix === x && iy === y) {
         return 0;
@@ -89,6 +120,7 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
   };
 
   const handleScaleDown = () => {
+    saveHistoryBeforeAction();
     const newWidth = mapWidth * 2;
     const newHeight = mapHeight * 2;
 
@@ -118,7 +150,7 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
     if (scaleLevel === 0) {
       return;
     }
-
+    saveHistoryBeforeAction();
     const newWidth = mapWidth / 2;
     const newHeight = mapHeight / 2;
 
@@ -175,6 +207,7 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
   };
 
   const handleBrushModeChange = (checked) => {
+    saveHistoryBeforeAction();
     if (checked) {
       setEraserActive(false); 
     }
@@ -182,11 +215,32 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
   };
 
   const handleEraserModeChange = (checked) => {
+    saveHistoryBeforeAction();
     if (checked) {
       setBrushActive(false);
     }
     setEraserActive(checked);
   };
+
+  function undo() {
+    if (past.length > 0) {
+      const previous = past[past.length - 1];
+      const current = getCurrentState();
+      setFuture([...future, current]);
+      setPast(past.slice(0, past.length - 1));
+      loadState(previous);
+    }
+  }
+
+  function redo() {
+    if (future.length > 0) {
+      const next = future[future.length - 1];
+      const current = getCurrentState();
+      setPast([...past, current]);
+      setFuture(future.slice(0, future.length - 1));
+      loadState(next);
+    }
+  }
 
   return (
     <div>
@@ -197,7 +251,7 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
             name="std_tool"
             value="wall"
             checked={tool === 'wall'}
-            onChange={() => setTool('wall')}
+            onChange={() => { saveHistoryBeforeAction(); setTool('wall'); }}
           />
           Wall Tool
         </label>
@@ -207,7 +261,7 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
             name="std_tool"
             value="player"
             checked={tool === 'player'}
-            onChange={() => setTool('player')}
+            onChange={() => { saveHistoryBeforeAction(); setTool('player'); }}
           />
           Player Tool
         </label>
@@ -278,7 +332,9 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
         <button onClick={handlePlayClick}>Play</button>
         <button onClick={handleScaleDown}>Scale Down</button>
         <button onClick={handleScaleUp}>Scale Up</button>
-        <button onClick={onBack}>Back to Menu</button>
+        <button onClick={undo} disabled={past.length===0}>Undo</button>
+        <button onClick={redo} disabled={future.length===0}>Redo</button>
+        <button onClick={onBack}>Back</button>
       </div>
     </div>
   );
