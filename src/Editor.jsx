@@ -39,7 +39,6 @@ function Editor({ projectName, onBack, onPlay }) {
     saveProjectData(projectName, newData);
     onPlay();
   };
-
   return (
     <div style={{ textAlign: "center" }}>
       <h2>Editor: {projectName}</h2>

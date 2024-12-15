@@ -11,6 +11,14 @@
 - Sound Integration
 - Customizable Grid and Map Size (done)
 - Layered Maps or Multi-level Floors
+- Undo/Redo in the Editor
+- Increasing and decreasing grid size in editor
+- Brush Tools and Shapes
+- Real-time Validation/Feedback (Super Optional)
+  - The editor can analyze the map and provide immediate feedback:
+    - Is there a player start placed? If not, show a warning.
+    - Are there unreachable areas or isolated sections with no path from the player start? Highlight     them, prompting the designer to adjust.
+    - If certain rules must be followed (e.g., at least one exit), the editor can notify the user if the conditions aren’t met.
 - Undo/Redo in the Editor (done)
 - Increasing and decreasing grid size in editor (done)
 - Brush Tools (done)
