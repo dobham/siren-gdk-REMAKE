@@ -8,20 +8,24 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
   const [mapHeight, setMapHeight] = useState(initialMap.mapHeight);
   const [scaleLevel, setScaleLevel] = useState(initialMap.scaleLevel || 0);
 
-  // Tools: 'wall', 'player', 'brush' is replaced with just 'wall' and a "Brush Mode" checkbox
-  // Now we have only 'wall' or 'player' tools, and a separate "Brush Mode" checkbox if 'wall' is selected.
   const [tool, setTool] = useState('wall');
   const [brushActive, setBrushActive] = useState(false);
-  const mapScale = 20;
+  const [eraserActive, setEraserActive] = useState(false);
 
+  const mapScale = 20;
   const containerRef = useRef(null);
   const [isMouseDown, setIsMouseDown] = useState(false);
 
   const handleCellAction = (x, y) => {
     if (tool === 'wall') {
-      if (brushActive) {
+      if (brushActive && !eraserActive) {
+        // Paint cell as wall
         paintCellWall(x, y);
+      } else if (eraserActive && !brushActive) {
+        // Erase wall (make empty)
+        eraseCellWall(x, y);
       } else {
+        // Toggle wall normally
         toggleCellWall(x, y);
       }
     } else if (tool === 'player') {
@@ -41,10 +45,21 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
   };
 
   const paintCellWall = (x, y) => {
-    // Set cell to wall (1) without toggling
+    // Set cell to wall (1)
     const newMap = mapData.map((row, iy) => row.map((cell, ix) => {
       if (ix === x && iy === y) {
         return 1;
+      }
+      return cell;
+    }));
+    setMapData(newMap);
+  };
+
+  const eraseCellWall = (x, y) => {
+    // Set cell to empty (0)
+    const newMap = mapData.map((row, iy) => row.map((cell, ix) => {
+      if (ix === x && iy === y) {
+        return 0;
       }
       return cell;
     }));
@@ -139,7 +154,7 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
   };
 
   const onMouseMove = (e) => {
-    if (isMouseDown && tool === 'wall' && brushActive) {
+    if (isMouseDown && tool === 'wall') {
       const {xCell, yCell} = getCellFromEvent(e);
       if (xCell !== null && yCell !== null) {
         handleCellAction(xCell, yCell);
@@ -157,6 +172,20 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
       return {xCell: null, yCell: null};
     }
     return {xCell, yCell};
+  };
+
+  const handleBrushModeChange = (checked) => {
+    if (checked) {
+      setEraserActive(false); 
+    }
+    setBrushActive(checked);
+  };
+
+  const handleEraserModeChange = (checked) => {
+    if (checked) {
+      setBrushActive(false);
+    }
+    setEraserActive(checked);
   };
 
   return (
@@ -183,14 +212,24 @@ function StandardEditor({ initialMap, onSave, onPlay, onBack }) {
           Player Tool
         </label>
         {tool === 'wall' && (
-          <label style={{ marginLeft: '20px' }}>
-            <input
-              type="checkbox"
-              checked={brushActive}
-              onChange={(e) => setBrushActive(e.target.checked)}
-            />
-            Brush Mode
-          </label>
+          <>
+            <label style={{ marginLeft: '20px' }}>
+              <input
+                type="checkbox"
+                checked={brushActive}
+                onChange={(e) => handleBrushModeChange(e.target.checked)}
+              />
+              Brush Mode
+            </label>
+            <label style={{ marginLeft: '20px' }}>
+              <input
+                type="checkbox"
+                checked={eraserActive}
+                onChange={(e) => handleEraserModeChange(e.target.checked)}
+              />
+              Eraser Mode
+            </label>
+          </>
         )}
       </div>
 

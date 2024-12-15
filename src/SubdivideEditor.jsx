@@ -7,10 +7,10 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
   const [mode, setMode] = useState('subdivide'); // 'subdivide' or 'place'
   const [placingType, setPlacingType] = useState('wall'); // 'wall' or 'player'
   const [brushActive, setBrushActive] = useState(false);
+  const [eraserActive, setEraserActive] = useState(false);
   const [scaleLevel, setScaleLevel] = useState(initialMap.scaleLevel || 0);
 
   const mapScale = 40;
-
   const containerRef = useRef(null);
   const [isMouseDown, setIsMouseDown] = useState(false);
 
@@ -84,9 +84,12 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
         setPlayerY(cell.y + cell.height/2);
       } else if (placingType === 'wall') {
         if (!cell.subdivided) {
-          if (brushActive) {
+          if (brushActive && !eraserActive) {
             cell.cellType = 'wall';
+          } else if (eraserActive && !brushActive) {
+            cell.cellType = 'empty';
           } else {
+            // Toggle
             cell.cellType = (cell.cellType === 'wall') ? 'empty' : 'wall';
           }
         }
@@ -127,7 +130,7 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
   };
 
   const onMouseMove = (e) => {
-    if (isMouseDown && mode === 'place' && placingType === 'wall' && brushActive) {
+    if (isMouseDown && mode === 'place' && placingType === 'wall') {
       const {x, y} = getMapCoords(e);
       if (x !== null && y !== null) handleClickCell(x, y);
     }
@@ -145,8 +148,7 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
     return {x:clickX,y:clickY};
   };
 
-  // Scaling logic:
-  // Scale Down: Double root size, scale all cells by factor 2, scale player pos by 2
+  // Scaling
   const handleScaleDown = () => {
     const newRoot = structuredClone(root);
     scaleCells(newRoot, 2);
@@ -158,7 +160,6 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
     setScaleLevel(scaleLevel + 1);
   };
 
-  // Scale Up: If scaleLevel>0, half root size, scale all cells by factor 0.5, scale player pos by 0.5
   const handleScaleUp = () => {
     if (scaleLevel === 0) {
       return;
@@ -185,6 +186,20 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
       }
     }
   }
+
+  const handleBrushModeChange = (checked) => {
+    if (checked) {
+      setEraserActive(false);
+    }
+    setBrushActive(checked);
+  };
+
+  const handleEraserModeChange = (checked) => {
+    if (checked) {
+      setBrushActive(false);
+    }
+    setEraserActive(checked);
+  };
 
   return (
     <div>
@@ -233,14 +248,24 @@ function SubdivideEditor({ initialMap, onSave, onPlay, onBack }) {
             Player
           </label>
           {placingType === 'wall' && (
-            <label style={{ marginLeft: '20px' }}>
-              <input
-                type="checkbox"
-                checked={brushActive}
-                onChange={(e) => setBrushActive(e.target.checked)}
-              />
-              Brush Mode
-            </label>
+            <>
+              <label style={{ marginLeft: '20px' }}>
+                <input
+                  type="checkbox"
+                  checked={brushActive}
+                  onChange={(e) => handleBrushModeChange(e.target.checked)}
+                />
+                Brush Mode
+              </label>
+              <label style={{ marginLeft: '20px' }}>
+                <input
+                  type="checkbox"
+                  checked={eraserActive}
+                  onChange={(e) => handleEraserModeChange(e.target.checked)}
+                />
+                Eraser Mode
+              </label>
+            </>
           )}
         </div>
       )}
