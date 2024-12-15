@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import Menu from './Menu';
 import ProjectManager from './ProjectManager';
-import Game from './Game';
 import Editor from './Editor';
-import { loadProjectData } from './Database';
+import Game from './Game';
+import { loadProjectData, initProjectData } from './Database';
 
 function App() {
   const [view, setView] = useState('menu');
   const [projectName, setProjectName] = useState('');
 
   const handleStartProject = (name) => {
+    initProjectData(name);
     setProjectName(name);
     setView('editor');
   };
@@ -20,7 +21,8 @@ function App() {
       setProjectName(name);
       setView('editor');
     } else {
-      // If no data, initialize editor anyway
+      // If no data found, initialize
+      initProjectData(name);
       setProjectName(name);
       setView('editor');
     }
