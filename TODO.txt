@@ -9,7 +9,8 @@
      into a zip, it gives creators a way to share their "game" with 
      others who can run it locally.
 - Sound Integration
-- Customizable Grid and Map Size
+- Customizable Grid and Map Size (done)
 - Layered Maps or Multi-level Floors
 - Undo/Redo in the Editor
-- Increasing and decreasing grid size in editor
+- Increasing and decreasing grid size in editor (done)
+- Brush Tools and Shapes

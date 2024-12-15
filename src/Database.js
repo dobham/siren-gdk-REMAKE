@@ -37,7 +37,10 @@ export function initProjectData(name) {
       standardMap: {
         cells: Array.from({ length: 8 }, () => Array(8).fill(0)),
         playerX: 3,
-        playerY: 3
+        playerY: 3,
+        mapWidth: 8,
+        mapHeight: 8,
+        scaleLevel: 0 // new property to track scaling
       },
       subdivMap: {
         root: {
@@ -55,3 +58,4 @@ export function initProjectData(name) {
   }
   return data;
 }
+
