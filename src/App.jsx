@@ -1,62 +1,61 @@
-import React, { useState } from 'react';
-import Menu from './Menu';
-import ProjectManager from './ProjectManager';
-import Game from './Game';
-import Editor from './Editor';
-import { loadProjectData } from './Database';
+import React, { useState } from "react";
+import Menu from "./Menu";
+import ProjectManager from "./ProjectManager";
+import Editor from "./Editor";
+import Game from "./Game";
+import { loadProjectData, initProjectData } from "./Database";
 
 function App() {
-  const [view, setView] = useState('menu');
-  const [projectName, setProjectName] = useState('');
+  const [view, setView] = useState("menu");
+  const [projectName, setProjectName] = useState("");
 
   const handleStartProject = (name) => {
+    initProjectData(name);
     setProjectName(name);
-    setView('editor');
+    setView("editor");
   };
 
   const handleLoadProject = (name) => {
     const loaded = loadProjectData(name);
     if (loaded) {
       setProjectName(name);
-      setView('editor');
+      setView("editor");
     } else {
-      // If no data, initialize editor anyway
+      // If no data, initialize
+      initProjectData(name);
       setProjectName(name);
-      setView('editor');
+      setView("editor");
     }
   };
 
   const handlePlayGame = () => {
-    setView('game');
+    setView("game");
   };
 
   return (
-    <div style={{ textAlign: 'center' }}>
-      {view === 'menu' && (
+    <div style={{ textAlign: "center" }}>
+      {view === "menu" && (
         <Menu
-          onNewProject={() => setView('projectManager')}
-          onLoadProject={() => setView('projectManager')}
+          onNewProject={() => setView("projectManager")}
+          onLoadProject={() => setView("projectManager")}
         />
       )}
-      {view === 'projectManager' && (
+      {view === "projectManager" && (
         <ProjectManager
           onStartProject={handleStartProject}
           onLoadProject={handleLoadProject}
-          onBack={() => setView('menu')}
+          onBack={() => setView("menu")}
         />
       )}
-      {view === 'editor' && (
+      {view === "editor" && (
         <Editor
           projectName={projectName}
-          onBack={() => setView('menu')}
+          onBack={() => setView("projectManager")} // <--- Changed here
           onPlay={handlePlayGame}
         />
       )}
-      {view === 'game' && (
-        <Game
-          projectName={projectName}
-          onBackToMenu={() => setView('menu')}
-        />
+      {view === "game" && (
+        <Game projectName={projectName} onBackToMenu={() => setView("menu")} />
       )}
     </div>
   );

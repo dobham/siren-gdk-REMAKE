@@ -9,7 +9,7 @@
      into a zip, it gives creators a way to share their "game" with 
      others who can run it locally.
 - Sound Integration
-- Customizable Grid and Map Size
+- Customizable Grid and Map Size (done)
 - Layered Maps or Multi-level Floors
 - Undo/Redo in the Editor
 - Increasing and decreasing grid size in editor
@@ -19,3 +19,6 @@
     - Is there a player start placed? If not, show a warning.
     - Are there unreachable areas or isolated sections with no path from the player start? Highlight     them, prompting the designer to adjust.
     - If certain rules must be followed (e.g., at least one exit), the editor can notify the user if the conditions aren’t met.
+- Undo/Redo in the Editor (done)
+- Increasing and decreasing grid size in editor (done)
+- Brush Tools (done)

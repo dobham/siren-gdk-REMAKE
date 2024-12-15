@@ -1,21 +1,28 @@
-export function castRays(playerX, playerY, playerAngle, MAP_WIDTH, MAP_HEIGHT, map) {
+// Raycaster.js
+// Cast rays and return an array of ray data: {angle, distance, hitX, hitY, wasHitVertical, hitOffset}
+
+export function castRays(
+  playerX,
+  playerY,
+  playerAngle,
+  mapWidth,
+  mapHeight,
+  unusedMap,
+  lastEditorUsed,
+  mapData,
+) {
   const screenWidth = 320;
-  const fov = Math.PI / 3; 
+  const fov = Math.PI / 3;
   const halfFov = fov / 2;
   const numRays = screenWidth;
   const angleStep = fov / numRays;
-  const maxDepth = 20; 
-  const stepSize = 0.1; // Increase stepSize slightly for fewer steps, also speeds up calculation a bit
-
-  // Precompute player position and angle related
-  const px = playerX;
-  const py = playerY;
+  const maxDepth = 20;
+  const stepSize = 0.1;
 
   const rays = [];
 
   for (let i = 0; i < numRays; i++) {
     const rayAngle = playerAngle - halfFov + i * angleStep;
-    // Precompute cos & sin once per ray
     const eyeX = Math.cos(rayAngle);
     const eyeY = Math.sin(rayAngle);
 
@@ -25,54 +32,94 @@ export function castRays(playerX, playerY, playerAngle, MAP_WIDTH, MAP_HEIGHT, m
     let hitY = 0;
     let wasHitVertical = false;
 
-    // Early exit conditions:
-    // If we find a wall at a very short distance, we break immediately.
-    // Also, we break once a wall is found, no extra computations needed.
     while (!hitWall && distanceToWall < maxDepth) {
       distanceToWall += stepSize;
+      const testX = playerX + eyeX * distanceToWall;
+      const testY = playerY + eyeY * distanceToWall;
 
-      const checkX = px + eyeX * distanceToWall;
-      const checkY = py + eyeY * distanceToWall;
-
-      // Convert to int using bitwise truncation
-      const mx = checkX | 0;
-      const my = checkY | 0;
-
-      // Out of bounds
-      if (mx < 0 || mx >= MAP_WIDTH || my < 0 || my >= MAP_HEIGHT) {
+      // Check if out of bounds
+      if (!isWithinBounds(testX, testY, mapWidth, mapHeight)) {
         hitWall = true;
         distanceToWall = maxDepth;
-        hitX = checkX;
-        hitY = checkY;
-        break; // Early exit
-      }
-
-      // Check if we hit a wall
-      if (map[my][mx] === 1) {
-        hitWall = true;
-        hitX = checkX;
-        hitY = checkY;
-
-        // Determine if vertical or horizontal wall was hit
-        const distX = Math.abs(checkX - mx - 0.5);
-        const distY = Math.abs(checkY - my - 0.5);
-        wasHitVertical = distX > distY;
-
-        // Extremely close wall hit (not always necessary but can break early)
-        if (distanceToWall < stepSize * 2) {
-          break; // no need to refine more
+        hitX = testX;
+        hitY = testY;
+      } else {
+        // Check if hitting a wall depending on editor type
+        if (isWallAt(testX, testY, lastEditorUsed, mapData)) {
+          hitWall = true;
+          hitX = testX;
+          hitY = testY;
+          // Determine if vertical or horizontal
+          const mx = testX | 0;
+          const my = testY | 0;
+          const distX = Math.abs(testX - (mx + 0.5));
+          const distY = Math.abs(testY - (my + 0.5));
+          wasHitVertical = distX > distY;
         }
       }
     }
+
+    // Compute hitOffset for texture:
+    let hitOffset = 0;
+    if (wasHitVertical) {
+      // Vertical wall hit: use fractional Y
+      hitOffset = hitY - Math.floor(hitY);
+    } else {
+      // Horizontal wall hit: use fractional X
+      hitOffset = hitX - Math.floor(hitX);
+    }
+    if (hitOffset < 0) hitOffset += 1;
 
     rays.push({
       angle: rayAngle,
       distance: distanceToWall,
       hitX: hitX,
       hitY: hitY,
-      wasHitVertical: wasHitVertical
+      wasHitVertical: wasHitVertical,
+      hitOffset: hitOffset,
     });
   }
 
   return rays;
+}
+
+function isWithinBounds(x, y, mapWidth, mapHeight) {
+  return x >= 0 && x < mapWidth && y >= 0 && y < mapHeight;
+}
+
+function isWallAt(x, y, lastEditorUsed, mapData) {
+  if (lastEditorUsed === "standard") {
+    const mx = x | 0;
+    const my = y | 0;
+    if (
+      my < 0 ||
+      mx < 0 ||
+      my >= mapData.cells.length ||
+      mx >= mapData.cells[0].length
+    )
+      return true;
+    return mapData.cells[my][mx] === 1;
+  } else {
+    // Subdiv map check
+    return subdivIsWall(mapData.root, x, y);
+  }
+}
+
+function subdivIsWall(cell, x, y) {
+  if (!cell.subdivided) {
+    return cell.cellType === "wall";
+  } else {
+    for (let ch of cell.children) {
+      if (
+        x >= ch.x &&
+        x < ch.x + ch.width &&
+        y >= ch.y &&
+        y < ch.y + ch.height
+      ) {
+        return subdivIsWall(ch, x, y);
+      }
+    }
+    // If out of any children range
+    return true;
+  }
 }
